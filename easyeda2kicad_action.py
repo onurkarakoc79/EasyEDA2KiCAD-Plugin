@@ -3,6 +3,7 @@ import pcbnew
 from pcbnew import ActionPlugin
 import wx
 import subprocess
+import shutil
 
 class EasyEDA2KiCADPlugin(ActionPlugin):
     def defaults(self):
@@ -23,7 +24,13 @@ class EasyEDA2KiCADPlugin(ActionPlugin):
 
     def import_part(self, part_number):
         try:
-            command = f"easyeda2kicad --overwrite --full {part_number}"
+             #Get the correct path for easyeda2kicad using shutil
+            easyeda2kicad_path = shutil.which("easyeda2kicad")
+            if not easyeda2kicad_path:
+                wx.MessageBox("Error: 'easyeda2kicad' command not found.\nCheck if pipx is installed and added to PATH.", "Error", wx.ICON_ERROR)
+                return
+
+            command = f"{easyeda2kicad_path} --overwrite --full --lcsc_id={part_number}"
             result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
             if result.returncode != 0:
