@@ -2,18 +2,18 @@
     "$schema": "https://go.kicad.org/pcm/schemas/v1",
     "name": "EasyEDA2KiCAD Plugin",
     "description": "Imports parts from LCSC using easyeda2kicad",
-    "description_full": "This plugin allows users to enter an LCSC part number and automatically import the corresponding symbol and footprint using the easyeda2kicad tool.",
+    "description_full": "Import LCSC parts using the easyeda2kicad tool.",
     "identifier": "com.github.onurkarakoc79.easyeda2kicad-plugin",
     "type": "plugin",
     "author": {
-        "name": "Onur Karakoç",
+        "name": "Onur Karakoc",
         "contact": {
             "web": "https://github.com/onurkarakoc79",
             "github": "https://github.com/onurkarakoc79"
         }
     },
     "maintainer": {
-        "name": "Onur Karakoç",
+        "name": "Onur Karakoc",
         "contact": {
             "web": "https://github.com/onurkarakoc79",
             "github": "https://github.com/onurkarakoc79"
