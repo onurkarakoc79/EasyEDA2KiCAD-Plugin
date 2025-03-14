@@ -32,6 +32,11 @@ If you encounter the following warning:
 ```
 This occurs because you haven't created a KiCad project yet. Create a new project in KiCad to ensure that the `sym-lib` and `fp-lib` files are generated, then rerun the script.
 
+## Important Note About Libraries
+During the installation, the script will download the KiCad library folder into your **Documents** folder. To avoid overwriting or losing your existing libraries:
+- If you wish to keep your previous libraries, you can move them to the new KiCad library folder created during installation.
+- Alternatively, back up your existing library folder before running the installation script to prevent data loss.
+
 ## Finalizing Installation in KiCad
 1. Open **KiCad**.
 2. Go to **Tools** in the top menu and select **Configure Tools**.
