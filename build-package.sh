@@ -12,7 +12,7 @@ fi
 # Check if pipx is installed
 if ! command -v pipx &> /dev/null; then
     echo "🔄 Installing pipx..."
-    python3 -m pip install --user pipx
+    sudo apt install pipx
     python3 -m pipx ensurepath
     echo "❗ Please restart your terminal session for pipx to be recognized."
     exit 1

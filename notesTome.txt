@@ -1,0 +1,3 @@
+if you are first time download pipx you need to restart your program
+if you are not initilizae the system first time (opening pcb layout and schematic) configure paths etc not work because sym-lib and fp-lib is not created yet
+Maybe you can split bash files into two for installing pip and installing easyeda2kicad and other files
