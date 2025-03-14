@@ -34,7 +34,7 @@
         {
             "version": "1.0.0",
             "status": "stable",
-            "kicad_version": "7.0",
+            "kicad_version": "9.0",
             "download_url": "https://github.com/onurkarakoc79/EasyEDA2KiCAD-Plugin/releases/download/v1.0.0/easyeda2kicad-plugin.zip",
             "release_notes": "Initial release with EasyEDA to KiCad import support."
         }
