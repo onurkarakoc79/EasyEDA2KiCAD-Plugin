@@ -54,7 +54,9 @@ During the installation, the script will download the KiCad library folder into 
 ## Results
 Below are some example images showing the successful output of the plugin:
 
-*(Insert result images here)*
+![alt text](Results0.png)
+![alt text](Results1.png)
+
 
 ## Troubleshooting
 - If the plugin fails to show up after installation:
