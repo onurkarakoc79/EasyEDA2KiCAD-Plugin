@@ -7,7 +7,39 @@ import json  # For modifying KiCad config
 # Global dict to track injected panels
 injected_panels = {}
 
-KICAD_PATH = os.path.join(os.path.expanduser("~"), "Documents", "KiCAD", "EasyEDA2KiCAD")
+KICAD_PATH = os.path.join(os.path.expanduser("~"), "Documents", "KiCAD", "EASYEDA2KICAD")
+
+def get_easyeda2kicad_path():
+    # Attempt to locate easyeda2kicad via pipx environment detection
+    try:
+        result = subprocess.run(
+            ["pipx", "environment"],
+            capture_output=True,
+            text=True
+        )
+        for line in result.stdout.splitlines():
+            if "easyeda2kicad" in line:
+                env_path = line.split()[-1]  # Extracts the path to the venv
+                easyeda2kicad_path = os.path.join(env_path, "bin", "easyeda2kicad")
+                if os.path.exists(easyeda2kicad_path):
+                    return easyeda2kicad_path
+    except FileNotFoundError:
+        pass
+
+    # Fallback: Check the typical pipx installation path
+    fallback_path = os.path.expanduser("~/.local/share/pipx/venvs/easyeda2kicad/bin/easyeda2kicad")
+    if os.path.exists(fallback_path):
+        return fallback_path
+
+    # Final fallback using shutil
+    easyeda2kicad_path = shutil.which("easyeda2kicad")
+    if not easyeda2kicad_path:
+        raise FileNotFoundError(
+            "❗ Error: 'easyeda2kicad' command not found.\n"
+            "Ensure `pipx` is installed and the `easyeda2kicad` command is available in PATH."
+        )
+
+    return easyeda2kicad_path
 
 def inject_plugin_panel():
     print("Debug: Listing top-level window titles:")
@@ -27,9 +59,7 @@ def inject_plugin_panel():
             continue
 
         if ("Schematic" in title) or ("Eeschema" in title) or ("schematic" in title):
-            # Check if the panel is already added to avoid duplicates
             if window.GetId() not in injected_panels:
-                # Check if the panel already exists in the layout
                 if not any(isinstance(child, EasyEDA2KiCADPanel) for child in window.GetChildren()):
                     plugin_panel = EasyEDA2KiCADPanel(window)
                     if window.GetSizer() is not None:
@@ -39,7 +69,6 @@ def inject_plugin_panel():
                         injected_panels[window.GetId()] = plugin_panel
                         print("Injected plugin panel into window:", title)
 
-    # Remove references to closed windows
     current_ids = {w.GetId() for w in wx.GetTopLevelWindows()}
     for win_id in list(injected_panels.keys()):
         if win_id not in current_ids:
@@ -63,14 +92,10 @@ class EasyEDA2KiCADPanel(wx.Panel):
             wx.MessageBox("Please enter a valid LCSC part number.", "Error", wx.ICON_ERROR)
             return
 
-        easyeda2kicad_path = shutil.which("easyeda2kicad")
-
-        if not easyeda2kicad_path:
-            wx.MessageBox(
-                "Error: 'easyeda2kicad' command not found.\nEnsure `pipx` is installed and the `easyeda2kicad` command is available in PATH.",
-                "Error",
-                wx.ICON_ERROR
-            )
+        try:
+            easyeda2kicad_path = get_easyeda2kicad_path()
+        except FileNotFoundError:
+            wx.MessageBox("❗ Error: 'easyeda2kicad' command not found.\nEnsure `pipx` is installed and the `easyeda2kicad` command is available in PATH.", "Error", wx.ICON_ERROR)
             return
 
         # Correct Output Path to Target EASYEDA2KICAD Folder
@@ -80,7 +105,6 @@ class EasyEDA2KiCADPanel(wx.Panel):
         ]
 
         try:
-            # Import Symbol
             result_symbol = subprocess.run(command_symbol, capture_output=True, text=True)
             if result_symbol.returncode != 0:
                 wx.MessageBox(f"Failed to import symbol:\n{result_symbol.stderr}", "Import Error", wx.ICON_ERROR)

@@ -2,8 +2,14 @@ import os
 import json
 
 def get_kicad_config_path():
-    base_path = os.path.join(os.environ['APPDATA'], "kicad")
-    if os.path.exists(base_path):
+    # Check for platform-specific KiCad config paths
+    if os.name == 'nt':  # Windows
+        base_path = os.path.join(os.environ.get('APPDATA', ''), "kicad")
+    else:  # Linux and macOS
+        base_path = os.path.join(os.path.expanduser("~"), ".config", "kicad")
+
+    if base_path and os.path.exists(base_path):
+        # Detect newer KiCad versions like v7 or v8
         versions = [d for d in os.listdir(base_path) if d[0].isdigit() and os.path.isdir(os.path.join(base_path, d))]
         if versions:
             latest_version = max(versions, key=lambda v: float(v.split('.')[0]))
@@ -11,9 +17,14 @@ def get_kicad_config_path():
             if os.path.exists(latest_config_path):
                 return latest_config_path
 
+        # Fallback to checking the standard path for kicad_common.json
+        fallback_path = os.path.join(base_path, "kicad_common.json")
+        if os.path.exists(fallback_path):
+            return fallback_path
+
+    # macOS-specific path
     possible_paths = [
-        os.path.join(os.path.expanduser("~"), ".config", "kicad", "kicad_common.json"),  # Linux
-        os.path.join(os.path.expanduser("~"), "Library", "Preferences", "kicad", "kicad_common.json")  # macOS
+        os.path.join(os.path.expanduser("~"), "Library", "Preferences", "kicad", "kicad_common.json")
     ]
 
     for path in possible_paths:
@@ -87,6 +98,10 @@ def configure_kicad_paths():
 
     else:
         print("❗ KiCad configuration file not found. Please open KiCad, go to Preferences → Configure Paths, click OK, then rerun this script.")
+        print("🔍 If you have already launched KiCad, ensure your config is located in:")
+        print("   → Linux: ~/.config/kicad/")
+        print("   → macOS: ~/Library/Preferences/kicad/")
+        print("   → Windows: %APPDATA%\\kicad\\")
 
 if __name__ == "__main__":
     configure_kicad_paths()
