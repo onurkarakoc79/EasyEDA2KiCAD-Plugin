@@ -4,13 +4,9 @@ import subprocess
 import shutil  # For cross-platform command lookup
 import json  # For modifying KiCad config
 
-# Global dict to track injected panels
-injected_panels = {}
-
 KICAD_PATH = os.path.join(os.path.expanduser("~"), "Documents", "KiCAD", "EASYEDA2KICAD")
 
 def get_easyeda2kicad_path():
-    # Attempt to locate easyeda2kicad via pipx environment detection
     try:
         result = subprocess.run(
             ["pipx", "environment"],
@@ -19,19 +15,17 @@ def get_easyeda2kicad_path():
         )
         for line in result.stdout.splitlines():
             if "easyeda2kicad" in line:
-                env_path = line.split()[-1]  # Extracts the path to the venv
+                env_path = line.split()[-1]
                 easyeda2kicad_path = os.path.join(env_path, "bin", "easyeda2kicad")
                 if os.path.exists(easyeda2kicad_path):
                     return easyeda2kicad_path
     except FileNotFoundError:
         pass
 
-    # Fallback: Check the typical pipx installation path
     fallback_path = os.path.expanduser("~/.local/share/pipx/venvs/easyeda2kicad/bin/easyeda2kicad")
     if os.path.exists(fallback_path):
         return fallback_path
 
-    # Final fallback using shutil
     easyeda2kicad_path = shutil.which("easyeda2kicad")
     if not easyeda2kicad_path:
         raise FileNotFoundError(
@@ -42,14 +36,6 @@ def get_easyeda2kicad_path():
     return easyeda2kicad_path
 
 def inject_plugin_panel():
-    print("Debug: Listing top-level window titles:")
-    for window in wx.GetTopLevelWindows():
-        try:
-            title = window.GetTitle()
-            print("Window title:", title)
-        except Exception as e:
-            print("Error getting window title:", e)
-
     for window in wx.GetTopLevelWindows():
         try:
             title = window.GetTitle()
@@ -59,20 +45,18 @@ def inject_plugin_panel():
             continue
 
         if ("Schematic" in title) or ("Eeschema" in title) or ("schematic" in title):
-            if window.GetId() not in injected_panels:
-                if not any(isinstance(child, EasyEDA2KiCADPanel) for child in window.GetChildren()):
-                    plugin_panel = EasyEDA2KiCADPanel(window)
-                    if window.GetSizer() is not None:
-                        window.GetSizer().Add(plugin_panel, 0, wx.EXPAND)
-                        window.Layout()
-                        window.Refresh()
-                        injected_panels[window.GetId()] = plugin_panel
-                        print("Injected plugin panel into window:", title)
+            # Check if the panel already exists
+            if window.FindWindowByName("EasyEDA2KiCADPanel"):
+                continue
 
-    current_ids = {w.GetId() for w in wx.GetTopLevelWindows()}
-    for win_id in list(injected_panels.keys()):
-        if win_id not in current_ids:
-            del injected_panels[win_id]
+            plugin_panel = EasyEDA2KiCADPanel(window)
+            plugin_panel.SetName("EasyEDA2KiCADPanel")  # Assign a unique name to track it
+
+            if window.GetSizer() is not None:
+                window.GetSizer().Add(plugin_panel, 0, wx.EXPAND)
+                window.Layout()
+                window.Refresh()
+                print("Injected plugin panel into window:", title)
 
 class EasyEDA2KiCADPanel(wx.Panel):
     def __init__(self, parent):
@@ -98,7 +82,6 @@ class EasyEDA2KiCADPanel(wx.Panel):
             wx.MessageBox("❗ Error: 'easyeda2kicad' command not found.\nEnsure `pipx` is installed and the `easyeda2kicad` command is available in PATH.", "Error", wx.ICON_ERROR)
             return
 
-        # Correct Output Path to Target EASYEDA2KICAD Folder
         command_symbol = [
             easyeda2kicad_path, "--overwrite", "--full",
             f"--lcsc_id={part_number}", "--output", os.path.join(KICAD_PATH, "easyeda2kicad")
