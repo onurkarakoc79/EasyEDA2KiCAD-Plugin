@@ -66,4 +66,5 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo ✅ KiCAD paths configured!
+pause
 endlocal
