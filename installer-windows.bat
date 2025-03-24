@@ -5,6 +5,7 @@ REM Check if Python is installed
 where python >nul 2>nul
 IF %ERRORLEVEL% NEQ 0 (
     echo ❗ Python is not installed. Please install Python 3.8 or newer.
+    pause
     exit /b 1
 )
 
@@ -15,6 +16,7 @@ IF %ERRORLEVEL% NEQ 0 (
     python -m pip install pipx
     python -m pipx ensurepath
     echo ❗ Please close and reopen this window for pipx to be recognized.
+    pause
     exit /b 1
 )
 
@@ -22,6 +24,7 @@ REM Install easyeda2kicad via pipx
 pipx install easyeda2kicad
 IF %ERRORLEVEL% NEQ 0 (
     echo ❗ Failed to install easyeda2kicad. Please check your Python environment.
+    pause
     exit /b 1
 )
 
@@ -35,8 +38,8 @@ mkdir build\plugins
 REM Copy essential files
 copy metadata.json build\
 copy *.py build\plugins\
-copy icon.png build\plugins\
-copy icon-64x64.png build\resources\icon.png
+copy icons\icon.png build\plugins\
+copy icons\icon-64x64.png build\resources\icon.png
 
 REM Build the plugin package
 cd build
@@ -53,15 +56,16 @@ set KICAD_PATH=%KICA_FOLDER_PATH%\easyeda2kicad
 if not exist "%KICAD_FOLDER_PATH%" mkdir "%KICAD_FOLDER_PATH%"
 
 REM Download initial symbol (C7272)
-easyeda2kicad --lcsc_id C5364646 --full --overwrite --output "%KICAD_PATH%"
+easyeda2kicad --lcsc_id C7472 --full --overwrite --output "%KICAD_PATH%"
 
 REM Success message
 echo ✅ EasyEDA2KiCAD setup complete! Library created in: %KICAD_PATH%
 
 REM Run the configuration script for KiCAD paths
-python "%~dp0easyeda2kicad_config_kicad.py"
+python "%~dp0easyeda2kicad_config.py"
 IF %ERRORLEVEL% NEQ 0 (
     echo ❗ Failed to configure KiCAD paths. Please check your Python environment.
+    pause
     exit /b 1
 )
 
