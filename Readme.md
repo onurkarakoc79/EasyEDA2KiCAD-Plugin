@@ -59,7 +59,13 @@ Below are some example images showing the successful output of the plugin:
 ![alt text](Results0.png)
 ![alt text](Results1.png)
 
-
+## Uninstalling the plug-in
+- For Windows just run the uninstall-windows.bat file
+- For Ubuntu open a terminal in the folder of cloned repository and run the following script:
+   ```bash
+   ./uninstaller-ubuntu.sh
+   ```
+  
 ## Troubleshooting
 - If the plugin fails to show up after installation:
   - Verify your KiCad installation.
