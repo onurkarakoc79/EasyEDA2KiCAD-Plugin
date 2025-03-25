@@ -22,8 +22,8 @@ def remove_easyeda2kicad_entries(config_path):
             config_data = json.load(file)
 
         if 'environment' in config_data and 'vars' in config_data['environment']:
-            env_vars = config_data['environment']['vars']
-            if 'EASYEDA2KICAD' in env_vars:
+            env_vars = config_data['environment']['vars']            
+            if isinstance(env_vars, dict) and 'EASYEDA2KICAD' in env_vars:
                 del env_vars['EASYEDA2KICAD']
 
         with open(config_file, 'w') as file:

@@ -34,8 +34,8 @@ mkdir -p build/plugins
 # Copy essential files
 cp metadata.json build/
 cp *.py build/plugins/
-cp icon.png build/plugins/
-cp icon-64x64.png build/resources/icon.png
+cp icons/icon.png build/plugins/
+cp icons/icon-64x64.png build/resources/icon.png
 
 # Build the plugin package
 cd build
@@ -71,7 +71,7 @@ fi
 echo "✅ EasyEDA2KiCAD setup complete! Library created in: $KICAD_PATH"
 
 # Run the configuration script for KiCAD paths
-python3 "$(dirname "$0")/easyeda2kicad_config_kicad.py" || {
+python3 "$(dirname "$0")/easyeda2kicad_config.py" || {
     echo "❗ Failed to configure KiCAD paths. Please check your Python environment."
     exit 1
 }
