@@ -7,25 +7,19 @@ import json  # For modifying KiCad config
 ## @brief Path where KiCad plugin data will be stored.
 KICAD_PATH = os.path.join(os.path.expanduser("~"), "Documents", "KiCAD", "EASYEDA2KICAD")
 
+## @brief Returns a cleaned environment for subprocess calls.
+#  @details KiCad may propagate PYTHONPATH/PYTHONHOME and force loading system
+#  packages inside pipx/venv commands, causing import conflicts.
+def get_sanitized_subprocess_env():
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
+    return env
+
 ## @brief Retrieves the path of the `easyeda2kicad` command using pipx environment or fallback paths.
 #  @return The full path to the `easyeda2kicad` executable.
 #  @throws FileNotFoundError if `easyeda2kicad` command is not found.
 def get_easyeda2kicad_path():
-    try:
-        result = subprocess.run(
-            ["pipx", "environment"],
-            capture_output=True,
-            text=True
-        )
-        for line in result.stdout.splitlines():
-            if "easyeda2kicad" in line:
-                env_path = line.split()[-1]
-                easyeda2kicad_path = os.path.join(env_path, "bin", "easyeda2kicad")
-                if os.path.exists(easyeda2kicad_path):
-                    return easyeda2kicad_path
-    except FileNotFoundError:
-        pass
-
     # Fallback path for Linux systems
     fallback_path = os.path.expanduser("~/.local/share/pipx/venvs/easyeda2kicad/bin/easyeda2kicad")
     if os.path.exists(fallback_path):
@@ -117,7 +111,12 @@ class EasyEDA2KiCADPanel(wx.Panel):
 
         # Execute the import command
         try:
-            result_symbol = subprocess.run(command_symbol, capture_output=True, text=True)
+            result_symbol = subprocess.run(
+                command_symbol,
+                capture_output=True,
+                text=True,
+                env=get_sanitized_subprocess_env()
+            )
             if result_symbol.returncode != 0:
                 wx.MessageBox(f"Failed to import symbol:\n{result_symbol.stderr}", "Import Error", wx.ICON_ERROR)
                 return

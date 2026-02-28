@@ -1,0 +1,77 @@
+EasyEDA2KiCAD Plugin - Tamir Öncesi Nokta Atisi Hata Tespiti TODO
+
+0) Amac
+- Plugin'i degistirmeden once hatanin kaynagini kesinlestirmek.
+- "KiCad Python mi? pipx CLI mi?" ayrimini kanitla.
+
+1) Ortam Kaniti (KiCad hangi Python ile calisiyor?)
+- easyeda2kicad_action.py basina gecici debug ekle:
+  import sys
+  print("PLUGIN PYTHON:", sys.executable)
+  print("PLUGIN SYS.PATH:")
+  for p in sys.path:
+      print("   ", p)
+- KiCad'i terminalden baslat:
+  kicad <proje>.kicad_pro
+- Beklenen kanit:
+  - /usr/bin/python3
+  - /usr/lib/python3/dist-packages
+
+2) Plugin import zinciri kontrolu
+- Komutlar:
+  rg -n "import easyeda2kicad|from easyeda2kicad|import pydantic|from pydantic" -S .
+- Karar:
+  - Eger import varsa: plugin dogrudan kutuphane import ediyor (risk yuksek).
+  - Eger import yoksa: mimari subprocess tabanli (dogru yon).
+
+3) typing_extensions kaynagi kaniti (gecici)
+- Plugin'e gecici ekle:
+  import typing_extensions
+  print("typing_extensions loaded from:", typing_extensions.__file__)
+- Karar:
+  - /usr/lib/python3/dist-packages/... cikarsa, sistem Python zinciri kullaniliyor.
+
+4) Sadece CLI yolu testi (UI icinden)
+- Panelde gecici bir test butonu veya mevcut Import callback'inde kisa test:
+  - shutil.which("easyeda2kicad")
+  - subprocess.run([exe, "--help"], ...)
+- Karar:
+  - --help donuyorsa plugin->CLI cagrisi saglam.
+  - Donmuyorsa PATH/pipx kurulumu problemi var.
+
+5) Hata ayrimi icin standart kayit formati
+- Her import denemesinde su bilgileri kaydet:
+  - girilen LCSC ID
+  - calistirilan tam komut
+  - returncode
+  - stdout (kisa)
+  - stderr (tam)
+- Hedef: "plugin hatasi" ile "easyeda2kicad package hatasi" ayrimini tek bakista yapmak.
+
+6) Tekrarlanabilir test matrisi
+- En az 3 parca ile test:
+  - daha once basarili ID (ornek: C113952)
+  - once hata veren ID (ornek: C7472)
+  - rastgele yeni bir ID
+- Sonuclari tabloya yaz:
+  ID | returncode | sonuc | not
+
+7) Simdiki repo icin kesin bulgular (mevcut koddan)
+- easyeda2kicad_action.py dogrudan easyeda2kicad/pydantic import ETMIYOR.
+- Cagri subprocess ile binary uzerinden yapiliyor (dogru yaklasim).
+- Kritik iyilestirme adayi:
+  - get_easyeda2kicad_path() icindeki "pipx environment" parse adimi kirilgan.
+  - Once shutil.which("easyeda2kicad"), sonra bilinen fallback path daha guvenli.
+
+8) Tamire gecmeden once cikis kriterleri
+- Asagidaki 4 madde netlesmeden kod degisikligi yapma:
+  1. KiCad interpreter kaniti toplandi
+  2. Plugin import zinciri sonucu net
+  3. CLI --help testi UI icinden gecti
+  4. En az 3 ID ile test matrisi dolduruldu
+
+9) Tamir sonrasi ilk hedefler (hazirlik)
+- Debug print'leri kaldir
+- Kullaniciya anlasilir hata mesajlari
+- Uzun suren import icin UI bloklamayi azalt (thread/asenkron)
+
